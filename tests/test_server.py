@@ -52,3 +52,11 @@ def test_confident_endpoint_ping_without_order_id():
     r = client.post("/v1/refund-bot", json={"input": "hello"}, headers=AUTH)
     assert r.status_code == 200
     assert r.json()["tools_called"] == []
+
+
+def test_token_variants_accepted():
+    body = {"input": "ping"}
+    assert client.post("/v1/refund-bot", json=body, headers={"Authorization": "test-token"}).status_code == 200
+    assert client.post("/v1/refund-bot", json=body, headers={"Authorization": "bearer test-token"}).status_code == 200
+    assert client.post("/v1/refund-bot", json=body, headers={"X-API-Key": "test-token"}).status_code == 200
+    assert client.post("/v1/refund-bot", json=body, headers={"X-API-Key": "nope"}).status_code == 401

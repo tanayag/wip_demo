@@ -73,14 +73,20 @@ async def run(req: RunRequest) -> dict[str, Any]:
 
 # ----- Confident AI --------------------------------------------------------
 
-def require_token(authorization: str | None = Header(default=None)) -> None:
+def require_token(request: Request, authorization: str | None = Header(default=None),
+                  x_api_key: str | None = Header(default=None)) -> None:
+    """Accepts `Authorization: Bearer <token>`, `Authorization: <token>`, or `X-API-Key: <token>`."""
     token = settings().api_token
     if not token:
         raise HTTPException(status_code=503, detail="API_TOKEN is not set on the server")
-    supplied = ""
-    if authorization and authorization.lower().startswith("bearer "):
-        supplied = authorization[7:].strip()
+    supplied = (authorization or x_api_key or "").strip()
+    if supplied.lower().startswith("bearer "):
+        supplied = supplied[7:].strip()
+    supplied = supplied.strip('"').strip("'")
     if not hmac.compare_digest(supplied, token):
+        present = sorted(k for k in request.headers.keys() if k.lower() not in ("host", "content-length", "content-type", "accept", "accept-encoding", "connection", "user-agent"))
+        log.warning("401 on %s: headers present=%s auth_prefix=%r x_api_key=%s supplied_len=%d expected_len=%d",
+                    request.url.path, present, (authorization or "")[:10], bool(x_api_key), len(supplied), len(token))
         raise HTTPException(status_code=401, detail="bad or missing bearer token")
 
 
