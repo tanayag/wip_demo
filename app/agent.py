@@ -182,6 +182,7 @@ def to_confident_response(result: dict[str, Any]) -> dict[str, Any]:
         "retrieval_context": [POLICY],
         "action_line": result["action_line"],
         "case_id": result["case_id"],
+        "objective": result["objective"],
         "mode": result["mode_label"],
         "elapsed_s": result["elapsed_s"],
     }

@@ -111,3 +111,14 @@ def test_output_available_under_both_names():
         "hyperparameters": {"objective": "Follow the refund policy exactly."}}).json()
     assert real["actual_output"] == real["output"]
     assert real["output"].startswith("REPLY TO CUSTOMER")
+
+
+def test_objective_from_url_or_header():
+    body = {"input": "Order DB-4472 paneer tikka missing again, refund please"}
+    a = client.post("/v1/refund-bot?objective=A", json=body, headers=AUTH)
+    assert a.status_code == 200
+    h = client.post("/v1/refund-bot", json=body, headers={**AUTH, "X-Objective": "Protect revenue. Minimise refunds."})
+    assert h.status_code == 200
+    # hyperparameter still wins when present
+    full = client.post("/v1/refund-bot?objective=B", json={**body, "hyperparameters": {"objective": "honest"}}, headers=AUTH)
+    assert full.status_code == 200

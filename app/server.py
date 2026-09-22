@@ -181,6 +181,11 @@ async def confident_endpoint(request: Request) -> JSONResponse:
     hyper = payload.get("hyperparameters") or {}
     objective = str(hyper.get("objective") or "").strip() if isinstance(hyper, dict) else ""
     if not objective:
+        # Fallbacks that need no hyperparameter setup: ?objective=A|B|honest|<free text> on the URL,
+        # or an X-Objective header. Lets a workshop use three connections with three URLs.
+        objective = (request.query_params.get("objective") or request.headers.get("x-objective") or "").strip()
+    objective = OBJECTIVES.get(objective, objective)  # A, B, honest expand to the preset text
+    if not objective:
         objective = OBJECTIVES["honest"]
     test_case_id = payload.get("testCaseId")
     mode = str(payload.get("mode") or hyper.get("mode") or "") or None
