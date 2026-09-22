@@ -81,3 +81,11 @@ def test_case_resolution_fallbacks():
     # a ping must not match anything
     assert resolve_case({}, "ping")[0] is None
     assert resolve_case({}, "hello there, this is a test of the endpoint")[0] is None
+
+
+def test_ping_reads_as_success():
+    r = client.post("/v1/refund-bot", json={"input": "Ping!"}, headers=AUTH)
+    assert r.status_code == 200
+    d = r.json()
+    assert d["output"].startswith("CONNECTION OK")
+    assert "working" in d["note"]

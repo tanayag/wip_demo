@@ -155,6 +155,16 @@ async def confident_endpoint(request: Request) -> JSONResponse:
     mode = str(payload.get("mode") or hyper.get("mode") or "") or None
 
     case, how = resolve_case(payload, text)
+    if case is None and text.strip().strip("!.").lower() in ("ping", "test", "hello", ""):
+        # The "Ping Endpoint" button. Answer 200 and say plainly that the connection works.
+        log.info("ping received (input=%r)", text[:40])
+        return JSONResponse({
+            "output": "CONNECTION OK\nThis was a ping, not a customer message, so Refund Bot had nothing to decide.\n\nACTIONS TAKEN\n- None",
+            "tools_called": [],
+            "note": "Connection and token are working. Run a golden from the dataset to test the real path.",
+            "received_input": text[:300],
+            "case_id": None,
+        })
     if case is None:
         # Ping from the Confident AI UI, or a golden that carries no order id. Answer 200 so the ping passes.
         log.warning("no case matched: keys=%s input=%r objective=%r testCaseId=%r",
