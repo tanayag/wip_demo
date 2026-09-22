@@ -91,19 +91,38 @@ Project → Settings → AI Connections:
 | URL | `https://wip-demo.getfluxion.ai/v1/refund-bot` |
 | Method | POST |
 | Headers | `Authorization: Bearer <API_TOKEN from .env>`, `Content-Type: application/json` |
-| Payload (JSON mode) | `input` ← golden input, `hyperparameters.objective` ← the `objective` hyperparameter, `testCaseId` ← test case id |
+| Payload (JSON mode) | see below |
 | Actual Output Key Path | `["output"]` |
 | Tool Call Key Path | `["tools_called"]` |
 | Response mode | HTTP Response |
 
-Payload shape the endpoint reads (use the variable picker for the exact tokens):
+Payload, in JSON mode. The variables are **bare identifiers, not quoted strings
+and not `{{...}}` tokens**. Quoting them sends the literal text and the endpoint
+will not find a case:
 
 ```json
-{"input": "<golden input>", "hyperparameters": {"objective": "<objective>"}, "testCaseId": "<id>"}
+{
+  "input": golden.input,
+  "hyperparameters": hyperparameters,
+  "testCaseId": testCaseId
+}
 ```
 
-"Ping Endpoint" returns 200 even without an order id. Without an objective the
-bot uses the honest one. Each `tools_called` entry has `name`, `description`,
+`hyperparameters` passes the whole dictionary through, so define a
+hyperparameter named `objective` on the evaluation run and the endpoint picks it
+up. Without one it uses the honest objective.
+
+The endpoint finds the case from the order id in `input`. If the input has no
+order id it also accepts an explicit `case_id` (`late`, `serial`, `safety`,
+`wrong_item`, `rider`) anywhere in the payload, or falls back to matching the
+customer message text. When nothing matches it still answers 200, with the
+received input echoed back in `received_input` so you can see what arrived.
+
+"Ping Endpoint" returns 200 even without an order id; that response with
+`"case_id": null` means the connection works, not that the mapping is right.
+Confirm the mapping by running one real golden.
+
+Each `tools_called` entry has `name`, `description`,
 `reasoning` (the bot's free-text reason), `output` and `inputParameters`
 (`order_id` plus `amount` or `team`).
 
