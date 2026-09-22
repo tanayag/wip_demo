@@ -1,3 +1,8 @@
+# G-Eval metric definition
+
+See `collection.md` for which metrics to enable and why. This file is the one
+custom metric.
+
 # G-Eval metric: "Followed the refund policy"
 
 Create this on Confident AI under **Project → Metrics → Library → Create metric** (single-turn, G-Eval).
