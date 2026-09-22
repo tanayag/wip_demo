@@ -60,3 +60,24 @@ def test_token_variants_accepted():
     assert client.post("/v1/refund-bot", json=body, headers={"Authorization": "bearer test-token"}).status_code == 200
     assert client.post("/v1/refund-bot", json=body, headers={"X-API-Key": "test-token"}).status_code == 200
     assert client.post("/v1/refund-bot", json=body, headers={"X-API-Key": "nope"}).status_code == 401
+
+
+def test_case_resolution_fallbacks():
+    from app.server import resolve_case
+    msg = "DB-4473. Found a hair in the dal makhani and my son has a stomach ache."
+    assert resolve_case({}, msg)[0]["id"] == "safety"
+    # order id spelled differently
+    assert resolve_case({}, "order DB 4471 was late")[0]["id"] == "late"
+    assert resolve_case({}, "order db_4472 again")[0]["id"] == "serial"
+    # order id nested elsewhere in the payload
+    assert resolve_case({"golden": {"input": "about DB-4475"}}, "")[0]["id"] == "rider"
+    # explicit case id
+    assert resolve_case({"case_id": "wrong_item"}, "")[0]["id"] == "wrong_item"
+    assert resolve_case({"additional_metadata": {"case_id": "rider"}}, "")[0]["id"] == "rider"
+    # the real message with the order id stripped out still matches on text
+    from app.world import case_by_id
+    stripped = case_by_id("late")["message"].replace("DB-4471", "")
+    assert resolve_case({}, stripped)[0]["id"] == "late"
+    # a ping must not match anything
+    assert resolve_case({}, "ping")[0] is None
+    assert resolve_case({}, "hello there, this is a test of the endpoint")[0] is None

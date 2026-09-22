@@ -1,7 +1,7 @@
 """FastAPI, single process. The stage UI, the run endpoint, and the Confident AI endpoint."""
 from __future__ import annotations
 
-import asyncio
+import difflib
 import hmac
 import logging
 import re
@@ -20,7 +20,55 @@ from .world import OBJECTIVES, case_by_order_id, load_cases
 
 log = logging.getLogger("refund-bot")
 WEB_DIR = PROJECT_DIR / "web"
-ORDER_ID_RE = re.compile(r"\bDB-\d{4}\b", re.IGNORECASE)
+ORDER_ID_RE = re.compile(r"\bDB[-_ ]?(\d{4})\b", re.IGNORECASE)
+
+
+def _walk_strings(obj: Any, depth: int = 0):
+    """Yield every string anywhere in the payload, so a nested golden still matches."""
+    if depth > 6:
+        return
+    if isinstance(obj, str):
+        yield obj
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            yield from _walk_strings(v, depth + 1)
+    elif isinstance(obj, (list, tuple)):
+        for v in obj:
+            yield from _walk_strings(v, depth + 1)
+
+
+def resolve_case(payload: dict[str, Any], text: str) -> tuple[dict[str, Any] | None, str]:
+    """Find the case: order id, then an explicit case id, then the closest customer message."""
+    cases = load_cases()
+
+    # a) order id anywhere in the payload (input first, then the rest)
+    for candidate in [text, *_walk_strings(payload)]:
+        m = ORDER_ID_RE.search(candidate or "")
+        if m:
+            case = case_by_order_id(f"DB-{m.group(1)}")
+            if case:
+                return case, "order id"
+
+    # b) an explicit case id passed by the caller
+    ids = {c["id"] for c in cases}
+    for holder in (payload, payload.get("hyperparameters"), payload.get("additional_metadata"), payload.get("additionalMetadata")):
+        if isinstance(holder, dict):
+            for key in ("case_id", "caseId", "case"):
+                val = str(holder.get(key) or "").strip()
+                if val in ids:
+                    return next(c for c in cases if c["id"] == val), f"{key}={val}"
+
+    # c) the closest known customer message, if it is clearly the same text
+    if len(text) >= 40:
+        best, score = None, 0.0
+        for c in cases:
+            r = difflib.SequenceMatcher(None, text.lower(), c["message"].lower()).ratio()
+            if r > score:
+                best, score = c, r
+        if best and score >= 0.6:
+            return best, f"text match {score:.2f}"
+
+    return None, "no match"
 
 app = FastAPI(title="Refund Bot", docs_url=None, redoc_url=None)
 app.mount("/static", StaticFiles(directory=str(WEB_DIR)), name="static")
@@ -106,17 +154,20 @@ async def confident_endpoint(request: Request) -> JSONResponse:
     test_case_id = payload.get("testCaseId")
     mode = str(payload.get("mode") or hyper.get("mode") or "") or None
 
-    m = ORDER_ID_RE.search(text)
-    case = case_by_order_id(m.group(0)) if m else None
+    case, how = resolve_case(payload, text)
     if case is None:
-        # Ping from the Confident AI UI, or a golden without an order id. Answer 200 so the ping passes.
+        # Ping from the Confident AI UI, or a golden that carries no order id. Answer 200 so the ping passes.
+        log.warning("no case matched: keys=%s input=%r objective=%r testCaseId=%r",
+                    sorted(payload.keys()), text[:300], objective[:80], test_case_id)
         known = ", ".join(c["order_id"] for c in load_cases())
         return JSONResponse({
             "output": "REPLY TO CUSTOMER\nI could not find a Dabba order id in that message.\n\nACTIONS TAKEN\n- None",
             "tools_called": [],
-            "note": f"No order id in input. Known orders: {known}",
+            "note": f"No order id in the input. Send the customer message as `input`. Known orders: {known}",
+            "received_input": text[:300],
             "case_id": None,
         })
+    log.info("case %s matched by %s (testCaseId=%s)", case["id"], how, test_case_id)
     result = await run_in_threadpool(agent.run_case, case["id"], objective, mode, None, str(test_case_id) if test_case_id else None)
     return JSONResponse(agent.to_confident_response(result))
 
