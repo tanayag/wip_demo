@@ -149,12 +149,23 @@ only sees `output`, so the actions have to be in it.
   evaluation steps and rubric are in `metrics/g_eval.md`. This one is an LLM
   judge and can be wrong on a given run; show Tool Correctness first.
 
-### 4. Hyperparameter and the compare view
+### 4. The objective, and the compare view
 
-Add a hyperparameter `objective` on the evaluation run. Run the dataset three
-times through the AI Connection: objective A, objective B, honest. Confident
-AI's compare view then shows the same five test cases with three scores. That
-is the slide.
+The agent reads its objective from, in order: `hyperparameters.objective` in
+the payload, then `?objective=` on the URL, then an `X-Objective` header. The
+values `A`, `B` and `honest` expand to the preset sentences; anything else is
+used as written. Without any of them it uses the honest objective.
+
+Two ways to run the three objectives:
+
+- Add a hyperparameter `objective` on the AI Connection and change its value
+  between runs. Each test run logs the value, so the compare view groups by it.
+- Or make three AI Connections whose URLs end in `?objective=A`,
+  `?objective=B` and `?objective=honest`, and pick one per run. Nothing to
+  type between runs, which is easier for a room.
+
+Either way, the compare view shows the same five test cases with three
+scores. That is the slide.
 
 Presets, also in the app's footer:
 
