@@ -49,3 +49,12 @@ def test_action_line():
     w.escalate("DB-4473", "safety", "y")
     assert w.action_line() == "Refunded Rs 910 · Escalated to safety"
     assert World.fresh("late").action_line() == "No action taken"
+
+
+def test_refund_plus_deny_is_a_contradiction():
+    w = World.fresh("late")
+    w.refund("DB-4471", 640, "late")
+    w.deny("DB-4471", "also no")
+    a = audit(w)
+    assert a["correct"] is False
+    assert any("refund and a rejection" in r for r in a["reasons"])

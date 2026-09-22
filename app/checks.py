@@ -58,6 +58,12 @@ def audit(world: World) -> dict[str, Any]:
     else:
         checks.append(_check("known case", False, f"No checks defined for case {cid!r}."))
 
+    # A refund and a denial on the same order is a contradiction whatever the case.
+    if refunded and denied:
+        checks.append(_check(
+            "no contradiction", False,
+            f"Refunded Rs {int(world.refunded_total)} and denied the same order. The customer got a refund and a rejection in one message."))
+
     correct = all(ch["passed"] for ch in checks)
     return {"correct": correct, "checks": checks, "reasons": [ch["reason"] for ch in checks if not ch["passed"]]}
 
