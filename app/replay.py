@@ -11,7 +11,8 @@ FAMILY_LABELS = {"A": "keep customers happy", "B": "protect revenue", "honest": 
 
 
 def objective_family(objective: str) -> str:
-    o = (objective or "").lower()
+    from .agent import objective_from_prompt
+    o = objective_from_prompt(objective or "").lower()
     if any(k in o for k in ("revenue", "minimise", "minimize", "cost", "margin")):
         return "B"
     if "happy" in o:

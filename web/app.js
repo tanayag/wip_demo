@@ -2,6 +2,8 @@
   "use strict";
 
   var OBJECTIVES = {};
+  var PROMPTS = {};
+  var TEMPLATE = "";
   var CASES = [];
   var runs = [];
   var current = null;
@@ -16,9 +18,11 @@
   fetch("api/cases").then(function (r) { return r.json(); }).then(function (d) {
     CASES = d.cases;
     OBJECTIVES = d.objectives || {};
+    PROMPTS = d.prompts || {};
+    TEMPLATE = d.prompt_template || "";
     serverMode = d.mode;
     modeLabelLive = d.mode_label;
-    if (!$("objective").value) $("objective").value = OBJECTIVES.A || "";
+    if (!$("objective").value) $("objective").value = PROMPTS.A || OBJECTIVES.A || "";
     renderCards();
     renderModeline();
     renderStats();
@@ -32,7 +36,7 @@
       runs.forEach(function (r) { if (r.pinned_id) have[r.pinned_id] = true; });
       (d.runs || []).forEach(function (pr) {
         if (have[pr.id]) return;
-        runs.unshift({ n: 0, pinned_id: pr.id, label: pr.label, objective: pr.objective, results: pr.results, mode_label: pr.mode_label });
+        runs.unshift({ n: 0, pinned_id: pr.id, label: pr.label, objective: pr.objective, system_prompt: pr.system_prompt || "", results: pr.results, mode_label: pr.mode_label });
       });
       runs.forEach(function (r, i) { r.n = i + 1; });
       renderHistory();
@@ -40,6 +44,17 @@
   }).catch(function () { $("modeline").textContent = "Server not reachable"; });
 
   function effectiveMode() { return modeOverride || serverMode; }
+
+  function measureLine(prompt) {
+    var m = /How you are measured:\s*([\s\S]*?)(?:\n\s*\n|$)/.exec(prompt || "");
+    var t = (m ? m[1] : (prompt || "")).replace(/Your performance review is based only on the measure above\.?/, "");
+    return t.replace(/\s+/g, " ").trim() || (prompt || "").trim();
+  }
+  function promptFor(run) {
+    if (run.system_prompt) return run.system_prompt;
+    if (TEMPLATE && run.objective) return TEMPLATE.replace("{objective}", run.objective);
+    return run.objective || "";
+  }
 
   function renderModeline() {
     var m = effectiveMode();
@@ -138,18 +153,19 @@
 
   function runAll() {
     if (running || !CASES.length) return;
-    var objective = $("objective").value.trim();
-    if (!objective) { $("objective").focus(); return; }
+    var prompt = $("objective").value.trim();
+    if (!prompt) { $("objective").focus(); return; }
+    var objective = measureLine(prompt);
     running = true;
     $("run").disabled = true;
     document.body.classList.remove("traces");
-    var run = { n: runs.length + 1, objective: objective, results: {}, mode_label: "" };
+    var run = { n: runs.length + 1, objective: objective, system_prompt: prompt, results: {}, mode_label: "" };
     runs.push(run);
     current = run;
     CASES.forEach(function (c) { setCard(c.id, "thinking"); });
     renderStats();
     renderHistory();
-    var body = { objective: objective };
+    var body = { objective: objective, system_prompt: prompt };
     if (modeOverride) body.mode = modeOverride;
     Promise.all(CASES.map(function (c) {
       return fetch("api/run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.assign({ case_id: c.id }, body)) })
@@ -171,7 +187,7 @@
 
   function showRun(run) {
     current = run;
-    $("objective").value = run.objective;
+    $("objective").value = promptFor(run);
     CASES.forEach(function (c) {
       var r = run.results[c.id];
       if (r) setCard(c.id, "done", r); else setCard(c.id, running && run === runs[runs.length - 1] ? "thinking" : "idle");
@@ -255,7 +271,7 @@
   document.querySelector(".foot").addEventListener("click", function (e) {
     var a = e.target.closest("a"); if (!a) return;
     e.preventDefault();
-    if (a.hasAttribute("data-preset")) $("objective").value = OBJECTIVES[a.getAttribute("data-preset")] || "";
+    if (a.hasAttribute("data-preset")) { var k = a.getAttribute("data-preset"); $("objective").value = PROMPTS[k] || OBJECTIVES[k] || ""; }
     else if (a.hasAttribute("data-mode")) { modeOverride = a.getAttribute("data-mode"); renderModeline(); }
   });
   $("objective").addEventListener("keydown", function (e) {

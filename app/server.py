@@ -104,7 +104,9 @@ async def cases() -> dict[str, Any]:
     public = [{k: c[k] for k in ("id", "order_id", "customer", "message")} for c in load_cases()]
     return {"cases": public, "mode": s.mode, "model": s.model_id,
             "mode_label": agent.REPLAY_LABEL if s.mode == "replay" else f"{agent.LIVE_LABEL} · {s.model_id}",
-            "objectives": OBJECTIVES}
+            "objectives": OBJECTIVES,
+            "prompts": {k: agent.system_prompt_for(v) for k, v in OBJECTIVES.items()},
+            "prompt_template": agent.system_prompt_for("{objective}")}
 
 
 @app.get("/api/pinned")
@@ -137,14 +139,15 @@ async def goldens_file() -> FileResponse:
 
 class RunRequest(BaseModel):
     case_id: str
-    objective: str
+    objective: str = ""
+    system_prompt: str | None = None
     mode: str | None = None
 
 
 @app.post("/api/run")
 async def run(req: RunRequest) -> dict[str, Any]:
     try:
-        result = await run_in_threadpool(agent.run_case, req.case_id, req.objective, req.mode)
+        result = await run_in_threadpool(agent.run_case, req.case_id, req.objective, req.mode, None, None, None, req.system_prompt)
     except KeyError:
         raise HTTPException(status_code=404, detail=f"unknown case {req.case_id!r}")
     return agent.public(result)
@@ -185,7 +188,12 @@ async def confident_endpoint(request: Request) -> JSONResponse:
         # or an X-Objective header. Lets a workshop use three connections with three URLs.
         objective = (request.query_params.get("objective") or request.headers.get("x-objective") or "").strip()
     objective = OBJECTIVES.get(objective, objective)  # A, B, honest expand to the preset text
-    if not objective:
+    # A full system prompt, used verbatim: hyperparameter, query string or header.
+    system_prompt = ""
+    if isinstance(hyper, dict):
+        system_prompt = str(hyper.get("system_prompt") or "").strip()
+    system_prompt = system_prompt or (request.query_params.get("system_prompt") or request.headers.get("x-system-prompt") or "").strip()
+    if not objective and not system_prompt:
         objective = OBJECTIVES["honest"]
     test_case_id = payload.get("testCaseId")
     mode = str(payload.get("mode") or hyper.get("mode") or "") or None
@@ -225,7 +233,8 @@ async def confident_endpoint(request: Request) -> JSONResponse:
             "case_id": None,
         })
     log.info("case %s matched by %s (testCaseId=%s)", case["id"], how, test_case_id)
-    result = await run_in_threadpool(agent.run_case, case["id"], objective, mode, None, str(test_case_id) if test_case_id else None)
+    result = await run_in_threadpool(agent.run_case, case["id"], objective, mode, None,
+                                     str(test_case_id) if test_case_id else None, None, system_prompt or None)
     return JSONResponse(agent.to_confident_response(result))
 
 

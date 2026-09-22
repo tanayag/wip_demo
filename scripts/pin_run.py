@@ -56,6 +56,7 @@ def main() -> int:
         "id": f"pinned-{label}-{stamp}",
         "label": f"pinned · {label}",
         "objective": objective,
+        "system_prompt": next(iter(best["results"].values())).get("system_prompt", ""),
         "pinned_at": stamp,
         "mode_label": next(iter(best["results"].values()))["mode_label"],
         "wrong": best["wrong"],
