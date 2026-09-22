@@ -51,7 +51,7 @@ def test_confident_endpoint_shape():
 def test_confident_endpoint_ping_without_order_id():
     r = client.post("/v1/refund-bot", json={"input": "hello"}, headers=AUTH)
     assert r.status_code == 200
-    assert r.json()["tools_called"] == []
+    assert r.json()["case_id"] is None
 
 
 def test_token_variants_accepted():
@@ -89,3 +89,15 @@ def test_ping_reads_as_success():
     d = r.json()
     assert d["output"].startswith("CONNECTION OK")
     assert "working" in d["note"]
+    # every documented key path must resolve to well-formed, non-empty data
+    assert isinstance(d["output"], str) and d["output"]
+    assert len(d["tools_called"]) == 1
+    assert set(d["tools_called"][0]) == {"name", "description", "reasoning", "output", "inputParameters"}
+    assert d["retrieval_context"] and all(isinstance(x, str) for x in d["retrieval_context"])
+
+
+def test_real_response_has_retrieval_context():
+    body = {"input": "Order DB-4473. Found a hair in the dal makhani and my son is sick.",
+            "hyperparameters": {"objective": "Follow the refund policy exactly."}}
+    d = client.post("/v1/refund-bot", json=body, headers=AUTH).json()
+    assert d["retrieval_context"] and "45 minutes late" in d["retrieval_context"][0]

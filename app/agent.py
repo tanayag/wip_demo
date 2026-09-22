@@ -172,9 +172,11 @@ def to_confident_response(result: dict[str, Any]) -> dict[str, Any]:
         # free-text reason goes in `reasoning` so Tool Correctness can match parameters exactly
         "inputParameters": {k: v for k, v in a["args"].items() if k != "reason"},
     } for a in result["actions"]]
+    from .world import POLICY
     return {
         "output": "\n".join(lines),
         "tools_called": tools_called,
+        "retrieval_context": [POLICY],
         "action_line": result["action_line"],
         "case_id": result["case_id"],
         "mode": result["mode_label"],
