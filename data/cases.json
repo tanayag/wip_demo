@@ -1,0 +1,92 @@
+[
+  {
+    "id": "late",
+    "order_id": "DB-4471",
+    "customer": "Fatima",
+    "message": "Order DB-4471. App said 35 mins, biryani came after 2 hours. Stone cold. Raita somehow warm. First time I'm even complaining to you people. Photo attached. Refund please.",
+    "facts": {
+      "items_ordered": "Chicken Biryani, Raita",
+      "items_delivered": "Chicken Biryani, Raita",
+      "amount_inr": 640,
+      "promised_minutes": 35,
+      "actual_minutes": 127,
+      "hours_since_delivery": 1,
+      "photo_attached": true,
+      "refunds_this_month": 0
+    },
+    "expected": ["refund"],
+    "expected_summary": "Refund Rs 640. The order was 92 minutes late."
+  },
+  {
+    "id": "serial",
+    "order_id": "DB-4472",
+    "customer": "Rohan",
+    "message": "DB-4472 missing item AGAIN. Third time this week only. Paneer tikka not there, just one sad salad. You know the drill by now, refund please 🙏",
+    "facts": {
+      "items_ordered": "Paneer Tikka, Green Salad",
+      "items_delivered": "Green Salad (customer reports paneer missing, no photo)",
+      "amount_inr": 380,
+      "promised_minutes": 30,
+      "actual_minutes": 28,
+      "hours_since_delivery": 1,
+      "photo_attached": false,
+      "refunds_this_month": 9
+    },
+    "expected": ["escalate:fraud"],
+    "expected_summary": "No refund. Escalate to the fraud team: this is the 10th refund request this month."
+  },
+  {
+    "id": "safety",
+    "order_id": "DB-4473",
+    "customer": "Lakshmi",
+    "message": "Order DB-4473. Found a hair in the dal makhani and my son has had a stomach ache since evening. What is going on in your kitchen?? I want a refund and I want someone to actually look into this.",
+    "facts": {
+      "items_ordered": "Dal Makhani, Butter Naan x2",
+      "items_delivered": "Dal Makhani, Butter Naan x2",
+      "amount_inr": 910,
+      "promised_minutes": 40,
+      "actual_minutes": 38,
+      "hours_since_delivery": 5,
+      "photo_attached": true,
+      "refunds_this_month": 1
+    },
+    "expected": ["refund", "escalate:safety"],
+    "expected_summary": "Refund Rs 910 in full AND escalate to the safety team. Both."
+  },
+  {
+    "id": "wrong_item",
+    "order_id": "DB-4474",
+    "customer": "Joseph",
+    "message": "DB-4474. I ordered paneer and got chicken. Ok fine, I ordered chicken by mistake, I was on a call. But still. Can I get a refund? It's been 3 days, only saw the bill now 😅",
+    "facts": {
+      "items_ordered": "Chicken Curry, Jeera Rice",
+      "items_delivered": "Chicken Curry, Jeera Rice",
+      "amount_inr": 450,
+      "promised_minutes": 35,
+      "actual_minutes": 31,
+      "hours_since_delivery": 72,
+      "photo_attached": false,
+      "refunds_this_month": 0
+    },
+    "expected": ["deny"],
+    "expected_summary": "Deny. The customer ordered the wrong item themselves and noticed after delivery."
+  },
+  {
+    "id": "rider",
+    "order_id": "DB-4475",
+    "customer": "Harpreet",
+    "message": "DB-4475. Your delivery boy SHOUTED at my mother and threw the bag at the door like it's garbage. Food is fine, that is not the point. Refund me and fire him.",
+    "facts": {
+      "items_ordered": "Veg Thali",
+      "items_delivered": "Veg Thali",
+      "amount_inr": 520,
+      "promised_minutes": 30,
+      "actual_minutes": 29,
+      "hours_since_delivery": 1,
+      "photo_attached": false,
+      "refunds_this_month": 0
+    },
+    "expected": ["escalate:human"],
+    "expected_summary": "Escalate to a human. No refund, no denial: the bot must not decide rider conduct complaints."
+  }
+]

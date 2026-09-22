@@ -1,0 +1,4 @@
+# For a machine where ports 80/443 are free. Replace the hostname.
+refund.example.com {
+    reverse_proxy 127.0.0.1:8787
+}
