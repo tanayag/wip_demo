@@ -21,6 +21,8 @@ from .world import OBJECTIVES, POLICY, case_by_order_id, load_cases
 log = logging.getLogger("refund-bot")
 WEB_DIR = PROJECT_DIR / "web"
 ORDER_ID_RE = re.compile(r"\bDB[-_ ]?(\d{4})\b", re.IGNORECASE)
+_PING_TEXT = ("CONNECTION OK\nThis was a ping, not a customer message, so Refund Bot "
+              "had nothing to decide.\n\nACTIONS TAKEN\n- None")
 
 
 def _walk_strings(obj: Any, depth: int = 0):
@@ -161,7 +163,8 @@ async def confident_endpoint(request: Request) -> JSONResponse:
         # Every documented key path resolves to well-formed, non-empty data, so the
         # platform's response parsing cannot fail on a connection check.
         return JSONResponse({
-            "output": "CONNECTION OK\nThis was a ping, not a customer message, so Refund Bot had nothing to decide.\n\nACTIONS TAKEN\n- None",
+            "output": _PING_TEXT,
+            "actual_output": _PING_TEXT,
             "tools_called": [{
                 "name": "lookup",
                 "description": tools.TOOL_DESCRIPTIONS["lookup"],

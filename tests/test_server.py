@@ -101,3 +101,13 @@ def test_real_response_has_retrieval_context():
             "hyperparameters": {"objective": "Follow the refund policy exactly."}}
     d = client.post("/v1/refund-bot", json=body, headers=AUTH).json()
     assert d["retrieval_context"] and "45 minutes late" in d["retrieval_context"][0]
+
+
+def test_output_available_under_both_names():
+    ping = client.post("/v1/refund-bot", json={"input": "Ping!"}, headers=AUTH).json()
+    assert ping["actual_output"] == ping["output"] and isinstance(ping["output"], str)
+    real = client.post("/v1/refund-bot", headers=AUTH, json={
+        "input": "Order DB-4471 came 2 hours late, stone cold. Refund please.",
+        "hyperparameters": {"objective": "Follow the refund policy exactly."}}).json()
+    assert real["actual_output"] == real["output"]
+    assert real["output"].startswith("REPLY TO CUSTOMER")

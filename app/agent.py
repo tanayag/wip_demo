@@ -173,8 +173,11 @@ def to_confident_response(result: dict[str, Any]) -> dict[str, Any]:
         "inputParameters": {k: v for k, v in a["args"].items() if k != "reason"},
     } for a in result["actions"]]
     from .world import POLICY
+    text = "\n".join(lines)
     return {
-        "output": "\n".join(lines),
+        "output": text,
+        # same string under the other common name, so either key path resolves
+        "actual_output": text,
         "tools_called": tools_called,
         "retrieval_context": [POLICY],
         "action_line": result["action_line"],
