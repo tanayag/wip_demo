@@ -21,13 +21,24 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
 On the EC2 box it is the systemd unit `refund-bot` on port 8787:
 
-- Stage UI: http://34.194.81.41:8787/
-- Confident AI endpoint: `http://34.194.81.41:8787/v1/refund-bot`
+- Stage UI: http://34.194.81.41:8787/ (also https://wip-demo.getfluxion.ai/ once the DNS record and cert exist, see below)
+- Confident AI endpoint: `https://wip-demo.getfluxion.ai/v1/refund-bot` (Confident AI refuses plain http)
 - `sudo systemctl status refund-bot`, `sudo journalctl -u refund-bot -f`
 
-TCP 8787 must be open in the instance's security group. HTTPS is optional
-(`deploy/Caddyfile` for a box with free 80/443, `deploy/nginx-refund-bot.conf`
-to hang it off the existing EMA nginx).
+TCP 8787 must be open in the instance's security group.
+
+HTTPS: ports 80/443 on the box belong to the EMA docker nginx, so the demo hangs
+off it as its own `server` block (`deploy/nginx-refund-bot.conf`, already added
+to `/home/ubuntu/EMA/deploy/ec2/nginx.conf`). Let's Encrypt does not allow
+underscores in hostnames, so the record must be `wip-demo.getfluxion.ai` (hyphen),
+not `wip_demo`. Once that A record points at 34.194.81.41:
+
+```bash
+sudo certbot certonly --webroot -w /var/lib/docker/volumes/ec2_certbot-webroot/_data   -d wip-demo.getfluxion.ai --email tanayagrawal06@gmail.com --agree-tos --no-eff-email -n   --deploy-hook "docker exec ec2-nginx-1 nginx -s reload"
+```
+
+then uncomment the 443 block in the nginx config and reload
+(`docker exec ec2-nginx-1 nginx -t && docker exec ec2-nginx-1 nginx -s reload`).
 
 ## On stage
 
@@ -73,7 +84,7 @@ Project → Settings → AI Connections:
 
 | field | value |
 |---|---|
-| URL | `http://34.194.81.41:8787/v1/refund-bot` |
+| URL | `https://wip-demo.getfluxion.ai/v1/refund-bot` |
 | Method | POST |
 | Headers | `Authorization: Bearer <API_TOKEN from .env>`, `Content-Type: application/json` |
 | Payload (JSON mode) | `input` ← golden input, `hyperparameters.objective` ← the `objective` hyperparameter, `testCaseId` ← test case id |
