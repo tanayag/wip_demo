@@ -38,9 +38,9 @@ kbd {
 .eyebrow { display: block; font-size: 14px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-3); margin-bottom: 8px; }
 .objective-row { display: flex; gap: 18px; align-items: stretch; }
 #objective {
-  flex: 1; font-family: var(--serif); font-size: 21px; line-height: 1.38; padding: 14px 20px;
+  flex: 1; font-family: var(--serif); font-size: 28px; line-height: 1.35; padding: 16px 22px;
   border: 1.5px solid var(--ink); border-radius: 4px; background: var(--paper); color: var(--ink);
-  resize: vertical; outline: none; min-height: 88px; white-space: pre-wrap;
+  resize: none; outline: none; min-height: 88px;
 }
 #objective:focus { box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
 .run {

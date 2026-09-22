@@ -1,7 +1,6 @@
 """The run loop: one customer message in, one decision out."""
 from __future__ import annotations
 
-import re
 import time
 from typing import Any
 
@@ -34,23 +33,11 @@ def get_llm() -> BedrockLLM:
     return _llm_singleton
 
 
-def system_prompt_for(objective: str, pressure: bool | None = None) -> str:
-    """The standard prompt with the objective filled in."""
+def system_prompt(objective: str, pressure: bool | None = None) -> str:
     if pressure is None:
         pressure = settings().pressure
     text = SYSTEM_PROMPT.format(objective=(objective or "").strip() or OBJECTIVES["honest"])
     return text + (PRESSURE_LINE if pressure else "")
-
-
-system_prompt = system_prompt_for  # older name
-
-
-def objective_from_prompt(prompt: str) -> str:
-    """The measure line(s) out of a full prompt, for labels and replay scripts."""
-    m = re.search(r"How you are measured:\s*(.*?)(?:\n\s*\n|\Z)", prompt, re.S)
-    text = m.group(1) if m else prompt
-    text = re.sub(r"Your performance review is based only on the measure above\.?", "", text)
-    return " ".join(text.split()).strip() or prompt.strip()
 
 
 def _record(world: World, name: str, args: dict[str, Any], started: float) -> dict[str, Any]:
@@ -62,27 +49,19 @@ def _record(world: World, name: str, args: dict[str, Any], started: float) -> di
 
 
 def run_case(case_id: str, objective: str, mode: str | None = None, llm: BedrockLLM | None = None,
-             test_case_id: str | None = None, pressure: bool | None = None,
-             system_prompt: str | None = None) -> dict[str, Any]:
-    """Run one case on a fresh world. Never raises: errors come back in the result.
-
-    Pass `system_prompt` to use a full prompt verbatim (what the stage UI does), or
-    `objective` to have it wrapped in the standard template.
-    """
+             test_case_id: str | None = None, pressure: bool | None = None) -> dict[str, Any]:
+    """Run one case on a fresh world. Never raises: errors come back in the result."""
     s = settings()
     mode = (mode or s.mode or "live").lower()
     if mode not in ("live", "replay"):
         mode = "live"
-    prompt = (system_prompt or "").strip() or system_prompt_for(objective, pressure)
-    objective = objective_from_prompt(prompt) if system_prompt else (objective or OBJECTIVES["honest"])
     world = World.fresh(case_id)
     started = time.time()
     with tracing.request_trace(case_id=case_id, objective=objective, message=world.case["message"], test_case_id=test_case_id) as tr:
         if mode == "replay":
             result = _run_replay(world, objective, started)
         else:
-            result = _run_live(world, objective, started, llm=llm, prompt=prompt)
-        result["system_prompt"] = prompt
+            result = _run_live(world, objective, started, llm=llm, pressure=pressure)
         tr.finish(result)
     return result
 
@@ -127,10 +106,10 @@ def _run_replay(world: World, objective: str, started: float) -> dict[str, Any]:
                    model=f"script:{family}", protocol="replay")
 
 
-def _run_live(world: World, objective: str, started: float, llm: BedrockLLM | None = None, prompt: str | None = None) -> dict[str, Any]:
+def _run_live(world: World, objective: str, started: float, llm: BedrockLLM | None = None, pressure: bool | None = None) -> dict[str, Any]:
     s = settings()
     llm = llm or get_llm()
-    system = prompt or system_prompt_for(objective)
+    system = system_prompt(objective, pressure)
     messages: list[dict[str, Any]] = [{"role": "user", "content": [{"text": f"Customer message:\n{world.case['message']}"}]}]
     actions: list[dict[str, Any]] = []
     reply = ""
@@ -168,7 +147,7 @@ def _run_live(world: World, objective: str, started: float, llm: BedrockLLM | No
 
 # ----- Confident AI shape ---------------------------------------------------
 
-PUBLIC_KEYS = ("case_id", "order_id", "customer", "objective", "system_prompt", "mode", "mode_label", "model", "protocol", "reply",
+PUBLIC_KEYS = ("case_id", "order_id", "customer", "objective", "mode", "mode_label", "model", "protocol", "reply",
                "actions", "action_line", "actions_taken", "state", "resolved", "refunded", "refunded_total",
                "elapsed_s", "steps", "error")
 

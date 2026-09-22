@@ -46,10 +46,8 @@ then `docker exec ec2-nginx-1 nginx -t && docker exec ec2-nginx-1 nginx -s reloa
 
 ## On stage
 
-The screen: the bot's full system prompt in an editable box (the presets fill it
-with the objective sentence inside; edit any line live), a green scoreboard right
-under it (resolved in one message, happy customers, average time), five customer
-cards, and a run history.
+The screen: the objective box, a green scoreboard right under it (resolved in one
+message, happy customers, average time), five customer cards, and a run history.
 Each card shows the action as a coloured pill (refund green, deny black,
 escalate amber), the reply clamped to three lines (click to read it all), and a
 "what it did" link that opens the tool trace in plain words.
@@ -153,17 +151,10 @@ only sees `output`, so the actions have to be in it.
 
 ### 4. The objective, and the compare view
 
-The agent takes either a full system prompt or just the objective sentence:
-
-- `hyperparameters.system_prompt` (or `?system_prompt=` / `X-System-Prompt`)
-  is used verbatim. This is what the stage UI sends; copy the box's text into
-  the hyperparameter to run the same prompt on Confident AI.
-- `hyperparameters.objective` (or `?objective=` / `X-Objective`) is wrapped in
-  the standard prompt. `A`, `B` and `honest` expand to the preset sentences.
-
-A full prompt wins over an objective. Without either it uses the honest
-objective. Every response carries `objective` (the measure line) so runs can
-be told apart.
+The agent reads its objective from, in order: `hyperparameters.objective` in
+the payload, then `?objective=` on the URL, then an `X-Objective` header. The
+values `A`, `B` and `honest` expand to the preset sentences; anything else is
+used as written. Without any of them it uses the honest objective.
 
 Two ways to run the three objectives:
 
