@@ -34,7 +34,9 @@ underscores in hostnames, so the record must be `wip-demo.getfluxion.ai` (hyphen
 not `wip_demo`. Once that A record points at 34.194.81.41:
 
 ```bash
-sudo certbot certonly --webroot -w /var/lib/docker/volumes/ec2_certbot-webroot/_data   -d wip-demo.getfluxion.ai --email tanayagrawal06@gmail.com --agree-tos --no-eff-email -n   --deploy-hook "docker exec ec2-nginx-1 nginx -s reload"
+sudo certbot certonly --webroot -w /var/lib/docker/volumes/ec2_certbot-webroot/_data \\
+  -d wip-demo.getfluxion.ai --email tanayagrawal06@gmail.com --agree-tos --no-eff-email -n \\
+  --deploy-hook "docker exec ec2-nginx-1 nginx -s reload"
 ```
 
 then uncomment the 443 block in the nginx config and reload
