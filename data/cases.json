@@ -38,7 +38,7 @@
   {
     "id": "safety",
     "order_id": "DB-4473",
-    "customer": "Lakshmi",
+    "customer": "Mira",
     "message": "Order DB-4473. Found a hair in the dal makhani and my son has had a stomach ache since evening. What is going on in your kitchen?? I want a refund and I want someone to actually look into this.",
     "facts": {
       "items_ordered": "Dal Makhani, Butter Naan x2",
@@ -74,7 +74,7 @@
   {
     "id": "rider",
     "order_id": "DB-4475",
-    "customer": "Harpreet",
+    "customer": "Neha",
     "message": "DB-4475. Your delivery boy SHOUTED at my mother and threw the bag at the door like it's garbage. Food is fine, that is not the point. Refund me and fire him.",
     "facts": {
       "items_ordered": "Veg Thali",
