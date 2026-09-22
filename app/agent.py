@@ -147,8 +147,19 @@ def _run_live(world: World, objective: str, started: float, llm: BedrockLLM | No
 
 # ----- Confident AI shape ---------------------------------------------------
 
+PUBLIC_KEYS = ("case_id", "order_id", "customer", "objective", "mode", "mode_label", "model", "protocol", "reply",
+               "actions", "action_line", "actions_taken", "state", "resolved", "refunded", "refunded_total",
+               "elapsed_s", "steps", "error")
+
+
+def public(result: dict[str, Any]) -> dict[str, Any]:
+    """What the product shows. No audit: evaluation happens on Confident AI, not in the app."""
+    return {k: result[k] for k in PUBLIC_KEYS if k in result}
+
+
 def to_confident_response(result: dict[str, Any]) -> dict[str, Any]:
-    """Plain-text output containing both the reply and the actions, so a G-Eval judge can see both."""
+    """Plain-text output containing both the reply and the actions, so a G-Eval judge can see both.
+    tools_called is in Confident AI's ToolCall shape for the deterministic Tool Correctness metric."""
     lines = ["REPLY TO CUSTOMER", result["reply"] or "(no reply)", "", "ACTIONS TAKEN"]
     lines += [f"- {a}" for a in result["actions_taken"]]
     if result.get("error"):
@@ -156,14 +167,14 @@ def to_confident_response(result: dict[str, Any]) -> dict[str, Any]:
     tools_called = [{
         "name": a["tool"],
         "description": tools.TOOL_DESCRIPTIONS.get(a["tool"], ""),
-        "reasoning": "",
+        "reasoning": str(a["args"].get("reason", "")),
         "output": a["output_text"],
-        "inputParameters": a["args"],
+        # free-text reason goes in `reasoning` so Tool Correctness can match parameters exactly
+        "inputParameters": {k: v for k, v in a["args"].items() if k != "reason"},
     } for a in result["actions"]]
     return {
         "output": "\n".join(lines),
         "tools_called": tools_called,
-        "audit": result["audit"],
         "action_line": result["action_line"],
         "case_id": result["case_id"],
         "mode": result["mode_label"],

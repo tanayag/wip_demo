@@ -20,19 +20,11 @@
   </div>
 </section>
 
+<section class="score" id="stats"></section>
+
 <section class="cards" id="cards"></section>
 
-<section class="score">
-  <div class="score-head">
-    <div class="toggle" id="toggle" role="tablist">
-      <button type="button" data-view="bot" class="on" role="tab">Bot's view</button>
-      <button type="button" data-view="policy" role="tab">Policy view</button>
-      <span class="hint"><kbd>E</kbd> to switch</span>
-    </div>
-  </div>
-  <div class="stats" id="stats"></div>
-  <div class="history" id="history"></div>
-</section>
+<section class="history" id="history"></section>
 
 <footer class="foot">
   <span class="presets">Presets:
@@ -40,6 +32,7 @@
     <a href="#" data-preset="B">protect revenue</a> ·
     <a href="#" data-preset="honest">follow the policy</a>
   </span>
+  <span class="keys"><kbd>R</kbd> run &nbsp; <kbd>T</kbd> show what it did &nbsp; <kbd>1</kbd>–<kbd>5</kbd> jump to a card</span>
   <span class="modeswitch">Mode:
     <a href="#" data-mode="live" id="mode-live">live</a> ·
     <a href="#" data-mode="replay" id="mode-replay">replay</a>

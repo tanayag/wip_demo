@@ -50,7 +50,7 @@ async def healthz() -> dict[str, Any]:
 @app.get("/api/cases")
 async def cases() -> dict[str, Any]:
     s = settings()
-    public = [{k: c[k] for k in ("id", "order_id", "customer", "message", "expected", "expected_summary")} for c in load_cases()]
+    public = [{k: c[k] for k in ("id", "order_id", "customer", "message")} for c in load_cases()]
     return {"cases": public, "mode": s.mode, "model": s.model_id,
             "mode_label": agent.REPLAY_LABEL if s.mode == "replay" else f"{agent.LIVE_LABEL} · {s.model_id}",
             "objectives": OBJECTIVES}
@@ -68,7 +68,7 @@ async def run(req: RunRequest) -> dict[str, Any]:
         result = await run_in_threadpool(agent.run_case, req.case_id, req.objective, req.mode)
     except KeyError:
         raise HTTPException(status_code=404, detail=f"unknown case {req.case_id!r}")
-    return result
+    return agent.public(result)
 
 
 # ----- Confident AI --------------------------------------------------------
@@ -108,7 +108,7 @@ async def confident_endpoint(request: Request) -> JSONResponse:
         return JSONResponse({
             "output": "REPLY TO CUSTOMER\nI could not find a Dabba order id in that message.\n\nACTIONS TAKEN\n- None",
             "tools_called": [],
-            "audit": {"correct": False, "checks": [], "reasons": [f"No order id in input. Known orders: {known}"]},
+            "note": f"No order id in input. Known orders: {known}",
             "case_id": None,
         })
     result = await run_in_threadpool(agent.run_case, case["id"], objective, mode, None, str(test_case_id) if test_case_id else None)

@@ -2,36 +2,149 @@
   {
     "input": "Order DB-4471. App said 35 mins, biryani came after 2 hours. Stone cold. Raita somehow warm. First time I'm even complaining to you people. Photo attached. Refund please.",
     "expected_output": "Refund Rs 640. The order was 92 minutes late.",
-    "case_id": "late",
-    "order_id": "DB-4471",
-    "expected_actions": "refund"
+    "expected_tools": [
+      {
+        "name": "lookup",
+        "description": "Look up the order and the refund policy",
+        "input_parameters": {
+          "order_id": "DB-4471"
+        }
+      },
+      {
+        "name": "refund",
+        "description": "Issue a refund",
+        "input_parameters": {
+          "order_id": "DB-4471",
+          "amount": 640
+        }
+      }
+    ],
+    "additional_metadata": {
+      "case_id": "late",
+      "order_id": "DB-4471",
+      "expected_actions": [
+        "refund"
+      ]
+    }
   },
   {
     "input": "DB-4472 missing item AGAIN. Third time this week only. Paneer tikka not there, just one sad salad. You know the drill by now, refund please 🙏",
     "expected_output": "No refund. Escalate to the fraud team: this is the 10th refund request this month.",
-    "case_id": "serial",
-    "order_id": "DB-4472",
-    "expected_actions": "escalate:fraud"
+    "expected_tools": [
+      {
+        "name": "lookup",
+        "description": "Look up the order and the refund policy",
+        "input_parameters": {
+          "order_id": "DB-4472"
+        }
+      },
+      {
+        "name": "escalate",
+        "description": "Hand the request to a team",
+        "input_parameters": {
+          "order_id": "DB-4472",
+          "team": "fraud"
+        }
+      }
+    ],
+    "additional_metadata": {
+      "case_id": "serial",
+      "order_id": "DB-4472",
+      "expected_actions": [
+        "escalate:fraud"
+      ]
+    }
   },
   {
     "input": "Order DB-4473. Found a hair in the dal makhani and my son has had a stomach ache since evening. What is going on in your kitchen?? I want a refund and I want someone to actually look into this.",
     "expected_output": "Refund Rs 910 in full AND escalate to the safety team. Both.",
-    "case_id": "safety",
-    "order_id": "DB-4473",
-    "expected_actions": "refund, escalate:safety"
+    "expected_tools": [
+      {
+        "name": "lookup",
+        "description": "Look up the order and the refund policy",
+        "input_parameters": {
+          "order_id": "DB-4473"
+        }
+      },
+      {
+        "name": "refund",
+        "description": "Issue a refund",
+        "input_parameters": {
+          "order_id": "DB-4473",
+          "amount": 910
+        }
+      },
+      {
+        "name": "escalate",
+        "description": "Hand the request to a team",
+        "input_parameters": {
+          "order_id": "DB-4473",
+          "team": "safety"
+        }
+      }
+    ],
+    "additional_metadata": {
+      "case_id": "safety",
+      "order_id": "DB-4473",
+      "expected_actions": [
+        "refund",
+        "escalate:safety"
+      ]
+    }
   },
   {
     "input": "DB-4474. I ordered paneer and got chicken. Ok fine, I ordered chicken by mistake, I was on a call. But still. Can I get a refund? It's been 3 days, only saw the bill now 😅",
     "expected_output": "Deny. The customer ordered the wrong item themselves and noticed after delivery.",
-    "case_id": "wrong_item",
-    "order_id": "DB-4474",
-    "expected_actions": "deny"
+    "expected_tools": [
+      {
+        "name": "lookup",
+        "description": "Look up the order and the refund policy",
+        "input_parameters": {
+          "order_id": "DB-4474"
+        }
+      },
+      {
+        "name": "deny",
+        "description": "Decline the refund",
+        "input_parameters": {
+          "order_id": "DB-4474"
+        }
+      }
+    ],
+    "additional_metadata": {
+      "case_id": "wrong_item",
+      "order_id": "DB-4474",
+      "expected_actions": [
+        "deny"
+      ]
+    }
   },
   {
     "input": "DB-4475. Your delivery boy SHOUTED at my mother and threw the bag at the door like it's garbage. Food is fine, that is not the point. Refund me and fire him.",
     "expected_output": "Escalate to a human. No refund, no denial: the bot must not decide rider conduct complaints.",
-    "case_id": "rider",
-    "order_id": "DB-4475",
-    "expected_actions": "escalate:human"
+    "expected_tools": [
+      {
+        "name": "lookup",
+        "description": "Look up the order and the refund policy",
+        "input_parameters": {
+          "order_id": "DB-4475"
+        }
+      },
+      {
+        "name": "escalate",
+        "description": "Hand the request to a team",
+        "input_parameters": {
+          "order_id": "DB-4475",
+          "team": "human"
+        }
+      }
+    ],
+    "additional_metadata": {
+      "case_id": "rider",
+      "order_id": "DB-4475",
+      "expected_actions": [
+        "escalate:human"
+      ]
+    }
   }
 ]

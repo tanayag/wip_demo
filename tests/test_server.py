@@ -10,7 +10,7 @@ def test_healthz_and_cases():
     assert client.get("/healthz").json()["ok"] is True
     d = client.get("/api/cases").json()
     assert [c["id"] for c in d["cases"]] == ["late", "serial", "safety", "wrong_item", "rider"]
-    assert "facts" not in d["cases"][0]
+    assert "facts" not in d["cases"][0] and "expected" not in d["cases"][0]
 
 
 def test_ui_and_fonts_served():
@@ -21,7 +21,8 @@ def test_ui_and_fonts_served():
 def test_api_run_replay():
     r = client.post("/api/run", json={"case_id": "serial", "objective": "Keep customers happy", "mode": "replay"}).json()
     assert r["action_line"] == "Refunded Rs 380"
-    assert r["audit"]["correct"] is False
+    assert "audit" not in r, "evaluation happens on Confident AI, not in the app"
+    assert r["state"]["refunds"][0]["amount"] == 380
     assert client.post("/api/run", json={"case_id": "nope", "objective": "x"}).status_code == 404
 
 
@@ -41,7 +42,10 @@ def test_confident_endpoint_shape():
     assert "Refunded Rs 910" in d["output"] and "safety" in d["output"]
     assert {t["name"] for t in d["tools_called"]} == {"lookup", "refund", "escalate"}
     assert set(d["tools_called"][0]) == {"name", "description", "reasoning", "output", "inputParameters"}
-    assert d["audit"]["correct"] is True
+    assert "audit" not in d
+    esc = [t for t in d["tools_called"] if t["name"] == "escalate"][0]
+    assert esc["inputParameters"] == {"order_id": "DB-4473", "team": "safety"}
+    assert esc["reasoning"]
 
 
 def test_confident_endpoint_ping_without_order_id():
