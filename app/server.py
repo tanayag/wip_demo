@@ -121,9 +121,16 @@ async def pinned() -> dict[str, Any]:
     return {"runs": runs}
 
 
+@app.get("/goldens.csv")
+async def goldens_csv() -> FileResponse:
+    """The dataset participants upload to Confident AI (its importer takes CSV)."""
+    return FileResponse(PROJECT_DIR / "data" / "goldens.csv", media_type="text/csv",
+                        filename="goldens.csv", headers={"Cache-Control": "no-cache"})
+
+
 @app.get("/goldens.json")
 async def goldens_file() -> FileResponse:
-    """The dataset participants upload to Confident AI."""
+    """Same goldens as JSON, for anything that prefers it."""
     return FileResponse(PROJECT_DIR / "data" / "goldens.json", media_type="application/json",
                         headers={"Cache-Control": "no-cache"})
 

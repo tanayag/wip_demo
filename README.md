@@ -72,7 +72,8 @@ Docs used: [AI Connections](https://www.confident-ai.com/docs/settings/project/a
 
 ### 1. Dataset
 
-Upload `data/goldens.json` (regenerate with `python -m scripts.export_goldens`).
+Upload `data/goldens.csv`, also served at `https://wip-demo.getfluxion.ai/goldens.csv`
+(regenerate both files with `python -m scripts.export_goldens`).
 Each golden has `input` (the customer message), `expected_output` (one line
 saying the right call), `expected_tools` in Confident AI's ToolCall shape, and
 `additional_metadata` with the case id.
@@ -87,8 +88,9 @@ does not pass a case that requires the fraud team. The refund amount is left
 out deliberately: models return it as `640` or `640.0`, and that type
 difference would fail a case that is otherwise correct.
 
-`data/goldens.csv` is the same thing with `expected_tools` as a JSON string, in
-case the CSV importer is easier.
+`data/goldens.json` is the same data as JSON. In the CSV, `expected_tools` is a
+JSON array in one cell; if the importer does not parse it, paste it into each
+golden's expected tools field in the UI.
 
 ### 2. AI Connection
 
@@ -182,7 +184,8 @@ the most policy failures, and saves it under `data/pinned/`. The UI merges
 pinned runs into the history (marked with a star). Click it, talk through the
 cards, then press `R` to show a fresh live run can differ.
 
-`GET /goldens.json` serves the dataset file for participants to upload. The
+`GET /goldens.csv` serves the dataset for participants to upload (Confident AI's
+importer takes CSV); `GET /goldens.json` is the same data as JSON. The
 service runs two uvicorn workers; 40 concurrent live requests came back in
 under 6 s with no errors, so a room of 20 running five goldens each is fine.
 
