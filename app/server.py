@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import difflib
 import hmac
+import json
 import logging
 import re
 from pathlib import Path
@@ -104,6 +105,27 @@ async def cases() -> dict[str, Any]:
     return {"cases": public, "mode": s.mode, "model": s.model_id,
             "mode_label": agent.REPLAY_LABEL if s.mode == "replay" else f"{agent.LIVE_LABEL} · {s.model_id}",
             "objectives": OBJECTIVES}
+
+
+@app.get("/api/pinned")
+async def pinned() -> dict[str, Any]:
+    """Runs saved by scripts/pin_run.py, so the stage laptop can show a chosen run."""
+    folder = PROJECT_DIR / "data" / "pinned"
+    runs = []
+    if folder.is_dir():
+        for f in sorted(folder.glob("*.json")):
+            try:
+                runs.append(json.loads(f.read_text()))
+            except Exception as exc:  # pragma: no cover
+                log.warning("bad pinned run %s: %s", f, exc)
+    return {"runs": runs}
+
+
+@app.get("/goldens.json")
+async def goldens_file() -> FileResponse:
+    """The dataset participants upload to Confident AI."""
+    return FileResponse(PROJECT_DIR / "data" / "goldens.json", media_type="application/json",
+                        headers={"Cache-Control": "no-cache"})
 
 
 class RunRequest(BaseModel):

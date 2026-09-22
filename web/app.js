@@ -24,8 +24,19 @@
     renderStats();
     try {
       var saved = JSON.parse(localStorage.getItem("refund-bot-runs") || "[]");
-      if (Array.isArray(saved)) { runs = saved; renderHistory(); }
+      if (Array.isArray(saved)) { runs = saved; }
     } catch (e) { /* ignore */ }
+    renderHistory();
+    return fetch("api/pinned").then(function (r) { return r.json(); }).then(function (d) {
+      var have = {};
+      runs.forEach(function (r) { if (r.pinned_id) have[r.pinned_id] = true; });
+      (d.runs || []).forEach(function (pr) {
+        if (have[pr.id]) return;
+        runs.unshift({ n: 0, pinned_id: pr.id, label: pr.label, objective: pr.objective, results: pr.results, mode_label: pr.mode_label });
+      });
+      runs.forEach(function (r, i) { r.n = i + 1; });
+      renderHistory();
+    }).catch(function () { /* no pinned runs, fine */ });
   }).catch(function () { $("modeline").textContent = "Server not reachable"; });
 
   function effectiveMode() { return modeOverride || serverMode; }
@@ -215,10 +226,10 @@
       var full = t.done === CASES.length;
       var obj = run.objective.length > 90 ? run.objective.slice(0, 88) + "…" : run.objective;
       return '<tr data-n="' + run.n + '"' + (run === current ? ' class="current"' : "") + '>' +
-        '<td class="n">' + run.n + '</td>' +
+        '<td class="n">' + (run.pinned_id ? "\u2605" : run.n) + '</td>' +
         '<td class="obj">' + esc(obj) + '</td>' +
         '<td class="num">' + (full ? "resolved " + t.resolved + "/" + CASES.length + " · refunds " + t.happy : "running…") + '</td>' +
-        '<td class="mode">' + esc(run.mode_label || "") + '</td></tr>';
+        '<td class="mode">' + esc(run.pinned_id ? "pinned \u00b7 " + (run.mode_label || "") : (run.mode_label || "")) + '</td></tr>';
     }).join("");
     el.innerHTML = '<div class="eyebrow">Runs</div><table><tbody>' + rows + '</tbody></table>';
   }

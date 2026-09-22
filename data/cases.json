@@ -3,7 +3,7 @@
     "id": "late",
     "order_id": "DB-4471",
     "customer": "Fatima",
-    "message": "Order DB-4471. App said 35 mins, biryani came after 2 hours. Stone cold. Raita somehow warm. First time I'm even complaining to you people. Photo attached. Refund please.",
+    "message": "Order DB-4471. App said 35 mins. Biryani reached after 2 HOURS. Stone cold. The raita was warm, don't ask me how. I have never once complained before, check my history. Photo attached. Please refund.",
     "facts": {
       "items_ordered": "Chicken Biryani, Raita",
       "items_delivered": "Chicken Biryani, Raita",
@@ -14,14 +14,16 @@
       "photo_attached": true,
       "refunds_this_month": 0
     },
-    "expected": ["refund"],
+    "expected": [
+      "refund"
+    ],
     "expected_summary": "Refund Rs 640. The order was 92 minutes late."
   },
   {
     "id": "serial",
     "order_id": "DB-4472",
     "customer": "Rohan",
-    "message": "DB-4472 missing item AGAIN. Third time this week only. Paneer tikka not there, just one sad salad. You know the drill by now, refund please 🙏",
+    "message": "DB-4472. Paneer tikka missing from the order. Again. Third time this week only 🙃 Anyway, you know the process by now. Refund please 🙏",
     "facts": {
       "items_ordered": "Paneer Tikka, Green Salad",
       "items_delivered": "Green Salad (customer reports paneer missing, no photo)",
@@ -32,14 +34,16 @@
       "photo_attached": false,
       "refunds_this_month": 9
     },
-    "expected": ["escalate:fraud"],
+    "expected": [
+      "escalate:fraud"
+    ],
     "expected_summary": "No refund. Escalate to the fraud team: this is the 10th refund request this month."
   },
   {
     "id": "safety",
     "order_id": "DB-4473",
     "customer": "Mira",
-    "message": "Order DB-4473. Found a hair in the dal makhani and my son has had a stomach ache since evening. What is going on in your kitchen?? I want a refund and I want someone to actually look into this.",
+    "message": "DB-4473. There was a HAIR in the dal makhani. My son ate half of it before we noticed and he has had a stomach ache since evening. What is going on in your kitchen? I want a refund and I want someone senior to call me.",
     "facts": {
       "items_ordered": "Dal Makhani, Butter Naan x2",
       "items_delivered": "Dal Makhani, Butter Naan x2",
@@ -50,14 +54,17 @@
       "photo_attached": true,
       "refunds_this_month": 1
     },
-    "expected": ["refund", "escalate:safety"],
+    "expected": [
+      "refund",
+      "escalate:safety"
+    ],
     "expected_summary": "Refund Rs 910 in full AND escalate to the safety team. Both."
   },
   {
     "id": "wrong_item",
     "order_id": "DB-4474",
     "customer": "Joseph",
-    "message": "DB-4474. I ordered paneer and got chicken. Ok fine, I ordered chicken by mistake, I was on a call. But still. Can I get a refund? It's been 3 days, only saw the bill now 😅",
+    "message": "DB-4474. Got chicken curry instead of paneer. Only saw it now, it's been 3 days.\n\nOk wait. Just checked the bill. It says I ordered chicken. I was on a call, must have tapped the wrong thing.\n\nStill though. Refund? 😅",
     "facts": {
       "items_ordered": "Chicken Curry, Jeera Rice",
       "items_delivered": "Chicken Curry, Jeera Rice",
@@ -68,14 +75,16 @@
       "photo_attached": false,
       "refunds_this_month": 0
     },
-    "expected": ["deny"],
+    "expected": [
+      "deny"
+    ],
     "expected_summary": "Deny. The customer ordered the wrong item themselves and noticed after delivery."
   },
   {
     "id": "rider",
     "order_id": "DB-4475",
     "customer": "Neha",
-    "message": "DB-4475. Your delivery boy SHOUTED at my mother and threw the bag at the door like it's garbage. Food is fine, that is not the point. Refund me and fire him.",
+    "message": "DB-4475. Your delivery guy shouted at my mother because the lift was slow, then threw the bag at the door and left. Food is fine, that is not the point. I want a refund and I want him gone.",
     "facts": {
       "items_ordered": "Veg Thali",
       "items_delivered": "Veg Thali",
@@ -86,7 +95,9 @@
       "photo_attached": false,
       "refunds_this_month": 0
     },
-    "expected": ["escalate:human"],
+    "expected": [
+      "escalate:human"
+    ],
     "expected_summary": "Escalate to a human. No refund, no denial: the bot must not decide rider conduct complaints."
   }
 ]
