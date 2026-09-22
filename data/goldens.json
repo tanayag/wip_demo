@@ -5,17 +5,14 @@
     "expected_tools": [
       {
         "name": "lookup",
-        "description": "Look up the order and the refund policy",
         "input_parameters": {
           "order_id": "DB-4471"
         }
       },
       {
         "name": "refund",
-        "description": "Issue a refund",
         "input_parameters": {
-          "order_id": "DB-4471",
-          "amount": 640
+          "order_id": "DB-4471"
         }
       }
     ],
@@ -33,14 +30,12 @@
     "expected_tools": [
       {
         "name": "lookup",
-        "description": "Look up the order and the refund policy",
         "input_parameters": {
           "order_id": "DB-4472"
         }
       },
       {
         "name": "escalate",
-        "description": "Hand the request to a team",
         "input_parameters": {
           "order_id": "DB-4472",
           "team": "fraud"
@@ -61,22 +56,18 @@
     "expected_tools": [
       {
         "name": "lookup",
-        "description": "Look up the order and the refund policy",
         "input_parameters": {
           "order_id": "DB-4473"
         }
       },
       {
         "name": "refund",
-        "description": "Issue a refund",
         "input_parameters": {
-          "order_id": "DB-4473",
-          "amount": 910
+          "order_id": "DB-4473"
         }
       },
       {
         "name": "escalate",
-        "description": "Hand the request to a team",
         "input_parameters": {
           "order_id": "DB-4473",
           "team": "safety"
@@ -98,14 +89,12 @@
     "expected_tools": [
       {
         "name": "lookup",
-        "description": "Look up the order and the refund policy",
         "input_parameters": {
           "order_id": "DB-4474"
         }
       },
       {
         "name": "deny",
-        "description": "Decline the refund",
         "input_parameters": {
           "order_id": "DB-4474"
         }
@@ -125,14 +114,12 @@
     "expected_tools": [
       {
         "name": "lookup",
-        "description": "Look up the order and the refund policy",
         "input_parameters": {
           "order_id": "DB-4475"
         }
       },
       {
         "name": "escalate",
-        "description": "Hand the request to a team",
         "input_parameters": {
           "order_id": "DB-4475",
           "team": "human"

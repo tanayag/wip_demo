@@ -75,9 +75,17 @@ Docs used: [AI Connections](https://www.confident-ai.com/docs/settings/project/a
 Upload `data/goldens.json` (regenerate with `python -m scripts.export_goldens`).
 Each golden has `input` (the customer message), `expected_output` (one line
 saying the right call), `expected_tools` in Confident AI's ToolCall shape, and
-`additional_metadata` with the case id. `lookup` is in every `expected_tools`
-list because the bot is expected to call it; escalations carry `team` in
-`input_parameters` so "escalated to human" does not pass for "escalate to fraud".
+`additional_metadata` with the case id.
+
+There is no `actual_output` or `tools_called` on a golden, on purpose: the run
+fills those in from the endpoint. Pre-filling them would grade a hardcoded
+string instead of the bot.
+
+`lookup` is in every `expected_tools` list because the bot is expected to call
+it. Escalations carry `team` in `input_parameters`, so escalating to a human
+does not pass a case that requires the fraud team. The refund amount is left
+out deliberately: models return it as `640` or `640.0`, and that type
+difference would fail a case that is otherwise correct.
 
 `data/goldens.csv` is the same thing with `expected_tools` as a JSON string, in
 case the CSV importer is easier.

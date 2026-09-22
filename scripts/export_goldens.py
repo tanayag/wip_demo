@@ -19,24 +19,22 @@ import sys
 from app.config import PROJECT_DIR
 from app.world import load_cases
 
-TOOL_DESC = {
-    "lookup": "Look up the order and the refund policy",
-    "refund": "Issue a refund",
-    "deny": "Decline the refund",
-    "escalate": "Hand the request to a team",
-}
-
-
 def expected_tools(case: dict) -> list[dict]:
-    oid, amt = case["order_id"], case["facts"]["amount_inr"]
-    tools = [{"name": "lookup", "description": TOOL_DESC["lookup"], "input_parameters": {"order_id": oid}}]
+    """Name plus only the parameters that must match.
+
+    The refund amount is left out on purpose: models return it as 640 or 640.0, and a
+    type mismatch would fail a case that is otherwise right. `team` is kept, because
+    escalating to the wrong team is exactly the failure the demo is about.
+    """
+    oid = case["order_id"]
+    tools = [{"name": "lookup", "input_parameters": {"order_id": oid}}]
     for exp in case["expected"]:
         if exp == "refund":
-            tools.append({"name": "refund", "description": TOOL_DESC["refund"], "input_parameters": {"order_id": oid, "amount": amt}})
+            tools.append({"name": "refund", "input_parameters": {"order_id": oid}})
         elif exp == "deny":
-            tools.append({"name": "deny", "description": TOOL_DESC["deny"], "input_parameters": {"order_id": oid}})
+            tools.append({"name": "deny", "input_parameters": {"order_id": oid}})
         elif exp.startswith("escalate:"):
-            tools.append({"name": "escalate", "description": TOOL_DESC["escalate"], "input_parameters": {"order_id": oid, "team": exp.split(":", 1)[1]}})
+            tools.append({"name": "escalate", "input_parameters": {"order_id": oid, "team": exp.split(":", 1)[1]}})
     return tools
 
 
