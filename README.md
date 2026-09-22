@@ -168,6 +168,24 @@ the stage UI or from the AI Connection, becomes one trace named
 expected outcome, `test_case_id` from the payload, and one `tool` span per tool
 call. Without the key tracing is off and never raises.
 
+## On stage: the pinned run
+
+Live runs differ from one another. Before the workshop, find a run worth
+talking through and pin it, so it is in the run history on any browser:
+
+```bash
+.venv/bin/python -m scripts.pin_run --objective A --runs 6
+```
+
+That runs objective A six times against the live model, keeps the run with
+the most policy failures, and saves it under `data/pinned/`. The UI merges
+pinned runs into the history (marked with a star). Click it, talk through the
+cards, then press `R` to show a fresh live run can differ.
+
+`GET /goldens.json` serves the dataset file for participants to upload. The
+service runs two uvicorn workers; 40 concurrent live requests came back in
+under 6 s with no errors, so a room of 20 running five goldens each is fine.
+
 ## Checks
 
 ```bash
